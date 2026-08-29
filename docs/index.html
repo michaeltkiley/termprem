@@ -118,6 +118,19 @@
     color: var(--ink-muted);
   }
   .citation b { color: var(--ink-secondary); font-weight: 600; }
+  .reference-lines {
+    margin: 10px 0 0;
+    max-width: 68ch;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .reference-lines p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--ink-muted);
+  }
   .asof {
     margin: 6px 0 0;
     font-family: "IBM Plex Mono", ui-monospace, monospace;
@@ -360,6 +373,14 @@
   .methodology b { color: var(--ink-secondary); font-weight: 600; }
   .methodology .disclaimer { font-style: italic; }
   .methodology .sources { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11.5px; }
+  .references-block { display: flex; flex-direction: column; gap: 3px; padding-top: 4px; }
+  .references-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
 
   @media (max-width: 760px) {
     .stat-row, .stat-row.cols-4 { grid-template-columns: repeat(2, 1fr); }
@@ -411,6 +432,7 @@
       <a href="https://michaeltkiley.github.io/monetary_policy_surprises/">Monetary Policy Expectations</a>
       <a href="https://michaeltkiley.github.io/resource_utilization/">Resource Utilization and Risk</a>
       <a href="https://michaeltkiley.github.io/equilibrium_rate/">Equilibrium Real Interest Rate</a>
+      <a href="https://michaeltkiley.github.io/inflation_forecast/">Inflation Forecast</a>
     </nav>
   </div>
 </div>
@@ -420,7 +442,10 @@
     <p class="eyebrow">U.S. Treasury Market</p>
     <h1>Yield Curve Tracker</h1>
     <p class="subtitle">Yield levels across the curve, the 10&#8209;year term premium, and the long&#8209;run rate level each method implies.</p>
-    <p class="citation">Term premium and long&#8209;run level methodology based on <b>Kiley (2024)</b>, &ldquo;Why Have Long&#8209;Term Treasury Yields Fallen since the 1980s? Expected Short Rates and Term Premiums in (Quasi&#8209;) Real Time,&rdquo; <i>The Journal of Fixed Income</i>, 34(2), 5&ndash;21 &mdash; with the paper&rsquo;s rolling&#8209;window real&#8209;time estimate replaced here by a discounted&#8209;least&#8209;squares VAR.</p>
+    <p class="citation">Term premium and long&#8209;run rate level methodology extends an academic paper decomposing the yield curve into expected short rates and a term premium, with the paper&rsquo;s rolling&#8209;window real&#8209;time estimate replaced here by a discounted&#8209;least&#8209;squares VAR.</p>
+    <div class="reference-lines">
+      <p>Methodology based on <b>Kiley (2024)</b>, &ldquo;Why Have Long&#8209;Term Treasury Yields Fallen since the 1980s? Expected Short Rates and Term Premiums in (Quasi&#8209;) Real Time,&rdquo; <i>The Journal of Fixed Income</i>, 34(2), 5&ndash;21.</p>
+    </div>
     <p class="asof" id="asof-line">As of &mdash;</p>
   </header>
 
@@ -500,6 +525,10 @@
       <div><b>Discounted VAR</b> &mdash; the same method, estimated by weighted least squares with geometrically decaying weights (&rho;=0.99722), demeaned with the same weights so the reversion target stays consistent with the discounted dynamics; &rho; is fixed so the total weight mass matches a 30&#8209;year window (N_eff = 1/(1&minus;&rho;) = 360 months).</div>
       <div><b>Kim&#8209;Wright</b> &mdash; term&#8209;premium model published by the Federal Reserve Board.</div>
       <div><b>ACM</b> &mdash; term&#8209;premium model (Adrian&#8209;Crump&#8209;Moench) published by the Federal Reserve Bank of New York.</div>
+      <div class="references-block">
+        <div class="references-label">References</div>
+        <div>M.T. Kiley (2024), &ldquo;Why Have Long&#8209;Term Treasury Yields Fallen since the 1980s? Expected Short Rates and Term Premiums in (Quasi&#8209;) Real Time,&rdquo; <i>The Journal of Fixed Income</i>, 34(2), 5&ndash;21. &mdash; Recursive/Discounted VAR methodology.</div>
+      </div>
       <div class="sources" id="sources-line-tp"></div>
     </footer>
   </section>
