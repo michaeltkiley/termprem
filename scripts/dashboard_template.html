@@ -215,6 +215,11 @@
     letter-spacing: -0.01em;
     color: var(--ink);
   }
+  .asof {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    color: var(--ink-muted);
+  }
   .stat-tile .deltas {
     display: flex;
     flex-direction: column;
@@ -622,21 +627,33 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 });
 
 // ---- shared date-comparison helpers ----
-function indexOneYearAgo(dates) {
-  const [ly, lm] = dates[dates.length - 1].split("-").map(Number);
-  const targetY = ly - 1;
-  for (let i = 0; i < dates.length; i++) {
+function indexYearsAgo(dates, anchorIdx, yearsBack) {
+  const [ly, lm] = dates[anchorIdx].split("-").map(Number);
+  const targetY = ly - yearsBack;
+  for (let i = 0; i <= anchorIdx; i++) {
     const [y, m] = dates[i].split("-").map(Number);
     if (y === targetY && m === lm) return i;
   }
   return null;
 }
+function indexOneYearAgo(dates) {
+  return indexYearsAgo(dates, dates.length - 1, 1);
+}
 function periodAverage(dates, values, start, end) {
   let sum = 0, count = 0;
   for (let i = 0; i < dates.length; i++) {
-    if (dates[i] >= start && dates[i] <= end && values[i] !== null && values[i] !== undefined) { sum += values[i]; count++; }
+    if (dates[i] >= start && dates[i] <= end && values[i] !== null && values[i] !== undefined && !Number.isNaN(values[i])) { sum += values[i]; count++; }
   }
   return count ? sum / count : null;
+}
+// Some series (e.g. Kim-Wright) publish weekly, so the most recent date on
+// the shared axis can be NaN for that series until its next update -- walk
+// back to the last value it actually has.
+function lastValidIndex(values, upTo) {
+  for (let i = upTo; i >= 0; i--) {
+    if (values[i] !== null && values[i] !== undefined && !Number.isNaN(values[i])) return i;
+  }
+  return upTo;
 }
 function deltaHelpers(dates) {
   const nn = dates.length;
@@ -646,30 +663,33 @@ function deltaHelpers(dates) {
     sampleAvgLabel: `vs. ${fmtDateShort(dates[0])}–${fmtDateShort(dates[nn - 1])} avg`,
   };
 }
-function deltaRowsFor(dates, values, helpers) {
-  const { n, idx1yr, sampleAvgLabel } = helpers;
-  const last = values[n - 1];
+function deltaRowsFor(dates, values, helpers, endIdx) {
+  const { idx1yr, sampleAvgLabel } = helpers;
+  if (endIdx === undefined) endIdx = helpers.n - 1;
+  const last = values[endIdx];
   const rows = [];
   if (idx1yr !== null) {
     rows.push({ label: "vs. 1 yr ago", value: fmtDelta(last - values[idx1yr]) });
   }
-  const avg = periodAverage(dates, values, dates[0], dates[n - 1]);
+  const avg = periodAverage(dates, values, dates[0], dates[endIdx]);
   if (avg !== null) {
     rows.push({ label: sampleAvgLabel, value: fmtDelta(last - avg) });
   }
   return rows;
 }
 
-function tile(label, value, deltaRows, color) {
+function tile(label, value, deltaRows, color, asOf) {
   const el = document.createElement("div");
   el.className = "stat-tile";
   const swatch = color ? `<span class="swatch" style="background:${color}"></span>` : "";
   const rows = deltaRows.map(r => `
     <div class="delta-row"><span class="dk">${r.label}</span><span class="dv">${r.value}</span></div>
   `).join("");
+  const asOfHtml = asOf ? `<div class="asof">as of ${asOf}</div>` : "";
   el.innerHTML = `
     <div class="label">${swatch}${label}</div>
     <div class="value">${value}</div>
+    ${asOfHtml}
     <div class="deltas">${rows}</div>
   `;
   return el;
@@ -880,7 +900,9 @@ function renderChart(svg, tooltip, dates, seriesData, opts) {
   statRow.appendChild(tile("10-yr Treasury yield", DATA.dgs10[helpers.n - 1].toFixed(2) + "%", deltaRowsFor(dates, DATA.dgs10, helpers), null));
   TP_SERIES.forEach(s => {
     const v = DATA[s.key];
-    statRow.appendChild(tile(s.tileLabel, fmtPct(v[helpers.n - 1]), deltaRowsFor(dates, v, helpers), s.color));
+    const endIdx = lastValidIndex(v, helpers.n - 1);
+    const asOf = endIdx !== helpers.n - 1 ? fmtDateLong(dates[endIdx]) : null;
+    statRow.appendChild(tile(s.tileLabel, fmtPct(v[endIdx]), deltaRowsFor(dates, v, helpers, endIdx), s.color, asOf));
   });
 
   buildLegend(document.getElementById("legend-full"), TP_SERIES);
@@ -911,15 +933,22 @@ function renderChart(svg, tooltip, dates, seriesData, opts) {
   const n = helpers.n;
 
   function decompRow(methodLabel, color, tpValues) {
-    const dTP1 = tpValues[n - 1] - tpValues[helpers.idx1yr];
-    const dY1 = DATA.dgs10[n - 1] - DATA.dgs10[helpers.idx1yr];
+    // Kim-Wright publishes weekly, so its endpoint can lag the shared date
+    // axis -- decompose at the last date it actually has, so the
+    // dTP + dExp = dY identity holds, rather than mixing a stale term
+    // premium with a fresher yield.
+    const idx = lastValidIndex(tpValues, n - 1);
+    const idx1 = indexYearsAgo(dates, idx, 1);
+    const dTP1 = tpValues[idx] - tpValues[idx1];
+    const dY1 = DATA.dgs10[idx] - DATA.dgs10[idx1];
     const dExp1 = dY1 - dTP1;
-    const tpAvg = periodAverage(dates, tpValues, dates[0], dates[n - 1]);
-    const yAvg = periodAverage(dates, DATA.dgs10, dates[0], dates[n - 1]);
-    const dTPs = tpValues[n - 1] - tpAvg;
-    const dYs = DATA.dgs10[n - 1] - yAvg;
+    const tpAvg = periodAverage(dates, tpValues, dates[0], dates[idx]);
+    const yAvg = periodAverage(dates, DATA.dgs10, dates[0], dates[idx]);
+    const dTPs = tpValues[idx] - tpAvg;
+    const dYs = DATA.dgs10[idx] - yAvg;
     const dExps = dYs - dTPs;
-    return { methodLabel, color, oneYr: { dTP: dTP1, dExp: dExp1, dY: dY1 }, sample: { dTP: dTPs, dExp: dExps, dY: dYs } };
+    const asOf = idx !== n - 1 ? fmtDateLong(dates[idx]) : null;
+    return { methodLabel, color, asOf, oneYr: { dTP: dTP1, dExp: dExp1, dY: dY1 }, sample: { dTP: dTPs, dExp: dExps, dY: dYs } };
   }
 
   const rows = [
@@ -932,7 +961,7 @@ function renderChart(svg, tooltip, dates, seriesData, opts) {
   function decompTable(title, caption, key) {
     const rowsHtml = rows.map(r => `
       <tr>
-        <td class="method"><span class="swatch" style="background:${r.color}"></span>${r.methodLabel}</td>
+        <td class="method"><span class="swatch" style="background:${r.color}"></span>${r.methodLabel}${r.asOf ? ` <span class="asof">(as of ${r.asOf})</span>` : ""}</td>
         <td>${fmtDelta(r[key].dTP)}</td>
         <td>${fmtDelta(r[key].dExp)}</td>
         <td class="total">${fmtDelta(r[key].dY)}</td>
