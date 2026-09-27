@@ -6,7 +6,7 @@ linked from [michaeltkiley.github.io](https://michaeltkiley.github.io/).
 Tracks Treasury par yields, the 10-year term premium (four methods: a
 recursive real-time VAR, a discounted-least-squares VAR, Kim-Wright, and
 ACM), and each VAR method's implied long-run short-rate level, updated
-automatically on weekday mornings via GitHub Actions (see
+automatically Tuesday–Saturday mornings via GitHub Actions (see
 `.github/workflows/update.yml`).
 
 Term premium and long-run-level methodology follows Kiley, M. T. (2024),
