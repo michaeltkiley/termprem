@@ -2,8 +2,9 @@ name: Update yield curve tracker
 
 on:
   schedule:
-    # 10:00 UTC, Mon-Fri (after Treasury/Fed/NY Fed sources roll to the prior close)
-    - cron: '0 10 * * 1-5'
+    # 10:00 UTC, Tue-Sat (sources lag ~2 business days, so Tue-Sat picks up
+    # Thu's close on Sat; a Mon run would add nothing new)
+    - cron: '0 10 * * 2-6'
   workflow_dispatch: {}
 
 permissions:
