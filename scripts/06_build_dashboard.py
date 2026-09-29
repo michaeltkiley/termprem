@@ -8,6 +8,9 @@ link is wanted.
 
 Usage:
     python3 06_build_dashboard.py [--run-date YYYYMMDD] [--db PATH] [--out-dir DIR]
+
+Also writes a public CSV of the monthly estimates (--csv-out) next to the
+Pages copy, linked from the dashboard as a download.
 """
 import argparse
 import json
@@ -45,6 +48,8 @@ def main():
     ap.add_argument("--template", default="dashboard_template.html")
     ap.add_argument("--pages-out", default="../docs/index.html",
                      help="also write a stable copy here for GitHub Pages (fixed URL, not date-stamped)")
+    ap.add_argument("--csv-out", default="../docs/termprem.csv",
+                     help="public CSV of the monthly estimates, served alongside the Pages copy")
     args = ap.parse_args()
 
     data_dir = Path(args.data_dir)
@@ -121,6 +126,23 @@ def main():
         pages_path.parent.mkdir(parents=True, exist_ok=True)
         pages_path.write_text(html)
         print(f"Wrote {pages_path} (stable Pages copy)")
+
+    if args.csv_out:
+        csv = pd.DataFrame({
+            "date": payload["dates"],
+            "yield_10y": payload["dgs10"],
+            "tp10_recursive_var": payload["rec_tp"],
+            "tp10_discounted_var": payload["disc_tp"],
+            "tp10_kim_wright": payload["kw_tp"],
+            "tp10_acm": payload["acm_tp"],
+            "longrun_level_recursive_var": payload["rec_yend"],
+            "longrun_level_discounted_var": payload["disc_yend"],
+            "sep_longrun_fed_funds": payload["sep_fedtarmdlr"],
+        })
+        csv_path = Path(args.csv_out)
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
+        csv.to_csv(csv_path, index=False)
+        print(f"Wrote {csv_path} ({len(csv)} rows)")
 
 
 if __name__ == "__main__":

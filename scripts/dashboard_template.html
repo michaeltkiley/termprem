@@ -376,6 +376,7 @@
     color: var(--ink-muted);
   }
   .methodology b { color: var(--ink-secondary); font-weight: 600; }
+  .methodology a { color: var(--accent-text); }
   .methodology .disclaimer { font-style: italic; }
   .methodology .sources { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11.5px; }
   .references-block { display: flex; flex-direction: column; gap: 3px; padding-top: 4px; }
@@ -534,6 +535,7 @@
         <div class="references-label">References</div>
         <div>M.T. Kiley (2024), &ldquo;Why Have Long&#8209;Term Treasury Yields Fallen since the 1980s? Expected Short Rates and Term Premiums in (Quasi&#8209;) Real Time,&rdquo; <i>The Journal of Fixed Income</i>, 34(2), 5&ndash;21. &mdash; Recursive/Discounted VAR methodology.</div>
       </div>
+      <div><b>Download</b> &mdash; <a href="termprem.csv" download>termprem.csv</a>: monthly (month&#8209;end; latest month is the most recent day) 10&#8209;year yield, all four term&#8209;premium estimates, both VAR long&#8209;run levels, and the SEP long&#8209;run fed funds rate, in percent. Kim&#8209;Wright and ACM are the Federal Reserve Board&rsquo;s and New York Fed&rsquo;s published series, included for comparison; cite those sources when using them.</div>
       <div class="sources" id="sources-line-tp"></div>
     </footer>
   </section>
@@ -558,6 +560,7 @@
       <div class="disclaimer">For informational purposes only. All downloads and calculations are the author&rsquo;s own and may contain errors &mdash; don&rsquo;t rely on this for decisions or conclusions. Verify independently with your own data and calculations before using it for any purpose. The analysis and views presented are the author&rsquo;s own and do not reflect the views of any institution with which he is affiliated.</div>
       <div><b>Recursive / Discounted long-run level</b> &mdash; the level each method&rsquo;s VAR demeans the short rate toward: a plain historical average for Recursive, a &rho;=0.99722&#8209;weighted average for Discounted (the same weighting used in its regression).</div>
       <div><b>SEP long-run federal funds rate</b> &mdash; median longer&#8209;run projection from the FOMC&rsquo;s Summary of Economic Projections (FRED series FEDTARMDLR), updated quarterly and held flat between releases.</div>
+      <div><b>Download</b> &mdash; <a href="termprem.csv" download>termprem.csv</a>: monthly (month&#8209;end; latest month is the most recent day) 10&#8209;year yield, all four term&#8209;premium estimates, both VAR long&#8209;run levels, and the SEP long&#8209;run fed funds rate, in percent. Kim&#8209;Wright and ACM are the Federal Reserve Board&rsquo;s and New York Fed&rsquo;s published series, included for comparison; cite those sources when using them.</div>
       <div class="sources" id="sources-line-rstar"></div>
     </footer>
   </section>
