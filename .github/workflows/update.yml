@@ -2,9 +2,10 @@ name: Update yield curve tracker
 
 on:
   schedule:
-    # 10:00 UTC, Tue-Sat (sources lag ~2 business days, so Tue-Sat picks up
-    # Thu's close on Sat; a Mon run would add nothing new)
-    - cron: '0 10 * * 2-6'
+    # 10:37 UTC (6:37am EDT / 5:37am EST), Tue-Sat (sources lag ~2 business
+    # days, so Tue-Sat picks up Thu's close on Sat; a Mon run would add nothing
+    # new). Off the top of the hour, when GitHub delays or drops scheduled runs.
+    - cron: '37 10 * * 2-6'
   workflow_dispatch: {}
 
 permissions:
