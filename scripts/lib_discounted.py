@@ -16,6 +16,7 @@ while avoiding the discontinuities a hard cutoff introduces as
 observations abruptly leave the window.
 """
 import numpy as np
+from lib_var import robust_lstsq
 
 RHO = 1 - 1 / 360  # 30-year effective window (N_eff = 1/(1-RHO) = 360 months)
 
@@ -28,7 +29,7 @@ def geometric_weights(n: int, rho: float = RHO) -> np.ndarray:
 
 def wls_fit(X: np.ndarray, y: np.ndarray, w: np.ndarray) -> np.ndarray:
     sw = np.sqrt(w)
-    beta, *_ = np.linalg.lstsq(X * sw[:, None], y * sw, rcond=None)
+    beta = robust_lstsq(X * sw[:, None], y * sw)
     return beta
 
 

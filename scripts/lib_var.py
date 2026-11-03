@@ -2,6 +2,21 @@
 import numpy as np
 
 
+def robust_lstsq(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
+    """Least-squares coefficients. np.linalg.lstsq uses an SVD (LAPACK gelsd)
+    that can raise LinAlgError("SVD did not converge") on some runner/BLAS
+    builds even for well-conditioned, finite input (seen 2026-11-03). Fall back
+    to a QR solve, which does not use the SVD. Non-finite input is a real data
+    problem, so it is reported rather than hidden."""
+    if not (np.isfinite(X).all() and np.isfinite(Y).all()):
+        raise ValueError("non-finite values in regression input")
+    try:
+        return np.linalg.lstsq(X, Y, rcond=None)[0]
+    except np.linalg.LinAlgError:
+        Q, R = np.linalg.qr(X)
+        return np.linalg.solve(R, Q.T @ Y)
+
+
 def estim_boot(Y: np.ndarray, vlag: int):
     """Reduced-form VAR(vlag) via equation-by-equation OLS, no constant/trend
     (iscon=0, istr=0), returned in companion form.
@@ -16,7 +31,7 @@ def estim_boot(Y: np.ndarray, vlag: int):
     Ydep = blocks[0]
     Xmat = np.hstack(blocks[1:])
 
-    Bcompsm, *_ = np.linalg.lstsq(Xmat, Ydep, rcond=None)
+    Bcompsm = robust_lstsq(Xmat, Ydep)
     Bcompsm = Bcompsm.T  # (Nbig, Nbig*vlag)
 
     bottom = np.hstack([np.eye(Nbig * (vlag - 1)), np.zeros((Nbig * (vlag - 1), Nbig))])
