@@ -4,6 +4,8 @@ import re
 
 import pandas as pd
 
+VAR_YIELDS = ["DGS1", "DGS3", "DGS5", "DGS7", "DGS10"]
+
 
 def clean_colname(name: str) -> str:
     name = name.strip()
@@ -53,4 +55,8 @@ def build_merged(treasury_path, kim_wright_path, acm_path) -> pd.DataFrame:
     ts = load_csv(treasury_path)
     kw = load_csv(kim_wright_path)
     acm = load_csv(acm_path)
-    return ts.join(kw, how="outer").join(acm, how="outer").sort_index()
+    merged = ts.join(kw, how="outer").join(acm, how="outer").sort_index()
+    # The sources publish on different lags. Stop at the last date with a full
+    # set of VAR yields: a later ACM/KW-only date can open a new resampling
+    # period with no yields to carry forward, putting NaNs into the VAR.
+    return merged.loc[: merged[VAR_YIELDS].dropna().index[-1]]
